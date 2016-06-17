@@ -1,16 +1,26 @@
 package springbook.user.dao;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
+//import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
 import springbook.user.domain.User;
+//import springbook.user.dao.SimpleConnectionMaker;
+import springbook.user.dao.ConnectionMaker;
 
 public class UserDao {
+//	private SimpleConnectionMaker simpleConnectionMaker;
+	
+	private ConnectionMaker connectionMaker;
+	
+	public UserDao(ConnectionMaker connectionMaker){
+		this.connectionMaker= connectionMaker;
+	}
+	
 	public void add(User user) throws ClassNotFoundException, SQLException{
-		Class.forName("org.mariadb.jdbc.Driver");
-		Connection c = DriverManager.getConnection("jdbc:mariadb://localhost:3306/study","root","kmk75042");
+		Connection c = connectionMaker.makeConnection();
 		
 		PreparedStatement ps = c.prepareStatement("insert into users(userid, name, password) values (?,?,?)");
 		
@@ -26,8 +36,7 @@ public class UserDao {
 	}
 	
 	public User get(String id) throws ClassNotFoundException, SQLException{
-		Class.forName("org.mariadb.jdbc.Driver");
-		Connection c = DriverManager.getConnection("jdbc:mariadb://localhost:3306/study", "root", "kmk75042");
+		Connection c = connectionMaker.makeConnection();
 		
 		PreparedStatement ps = c.prepareStatement("select * from users where userid = ?");
 		ps.setString(1,  id);
@@ -46,22 +55,31 @@ public class UserDao {
 		return user;
 	}
 	
-	public static void main(String argv[]) throws ClassNotFoundException, SQLException {
-		UserDao dao = new UserDao();
-		
-		User user = new User();
-		
-		user.setId("1");
-		user.setName("kim");
-		user.setPassword("kmk");
-		
-		dao.add(user);
-		
-		System.out.println(user.getId() + " : Success");
-		
-		User user2 = dao.get(user.getId());
-		System.out.println(user2.getName());
-		
-
-	}
+//	public abstract Connection getConnection() throws ClassNotFoundException, SQLException;
+	
+//	private Connection getConnection() throws ClassNotFoundException, SQLException {
+//		Class.forName("org.mariadb.jdbc.Driver");
+//		Connection c = DriverManager.getConnection("jdbc:mariadb://localhost:3306/study", "root", "kmk75042");
+//		
+//		return c;
+//	}
+//	
+//	public static void main(String argv[]) throws ClassNotFoundException, SQLException {
+//		UserDao dao = new UserDao();
+//		
+//		User user = new User();
+//		
+//		user.setId("2");
+//		user.setName("kim");
+//		user.setPassword("kmk");
+//		
+//		dao.add(user);
+//		
+//		System.out.println(user.getId() + " : Success");
+//		
+//		User user2 = dao.get(user.getId());
+//		System.out.println(user2.getName());
+//		
+//
+//	}
 }
