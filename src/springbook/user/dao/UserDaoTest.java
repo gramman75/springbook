@@ -16,7 +16,7 @@ public class UserDaoTest {
 		
 		User user = new User();
 		
-		user.setId("6");
+		user.setId("8");
 		user.setName("kim");
 		user.setPassword("kmk");
 		
