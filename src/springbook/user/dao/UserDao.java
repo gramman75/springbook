@@ -14,36 +14,37 @@ import springbook.user.domain.User;
 import springbook.user.dao.ConnectionMaker;
 
 public class UserDao {
-//	private SimpleConnectionMaker simpleConnectionMaker;
-	
-//	private ConnectionMaker connectionMaker;
-//	public UserDao(ConnectionMaker connectionMaker){
-//		this.connectionMaker= connectionMaker;
-//	}
-	
-//	public void setConnectionMaker(ConnectionMaker connectionMaker){
-//		this.connectionMaker = connectionMaker;
-//	}
 	private DataSource dataSource;
+	private JdbcContext jdbcContext;
 
 	public void setDataSource(DataSource dataSource){
+		this.jdbcContext = new JdbcContext();
+		this.jdbcContext.setDataSource(dataSource);
 		this.dataSource = dataSource;
 	}
-	public void add(User user) throws SQLException{
-//		Connection c = connectionMaker.makeConnection();
-		Connection c = dataSource.getConnection();
+	
+	
+	public void add(final User user) throws SQLException{
 		
-		PreparedStatement ps = c.prepareStatement("insert into users(userid, name, password) values (?,?,?)");
+//		this.jdbcContextWithStatementStrategy(
+//		this.jdbcContext.workWithStatementStrategy(
+//			new StatementStrategy(){
+//				public PreparedStatement makePreparedStatement(Connection c) throws SQLException{
+//					PreparedStatement ps = c.prepareStatement("insert into users(userid, name, password) values (?,?,?)");
+//					
+//					ps.setString(1, user.getId());
+//					ps.setString(2, user.getName());
+//					ps.setString(3, user.getPassword());
+//					
+//					return ps;
+//				}
+//			}
+//		);
 		
-		ps.setString(1, user.getId());
-		ps.setString(2, user.getName());
-		ps.setString(3, user.getPassword());
-		
-		ps.executeUpdate();
-		
-		ps.close();
-		c.close();
-		
+		this.jdbcContext.executeSql(
+				"insert into users(userid, name, password) values (?,?,?)",
+				user.getId(), user.getName(), user.getPassword()
+				);
 	}
 	
 	public User get(String id) throws SQLException{
@@ -72,14 +73,7 @@ public class UserDao {
 	}
 	
 	public void deleteAll() throws SQLException{
-		Connection c = dataSource.getConnection();
-		
-		PreparedStatement ps = c.prepareStatement("delete from users");
-		
-		ps.executeUpdate();
-		
-		ps.close();
-		c.close();
+		this.jdbcContext.executeSql("delete from users");
 	}
 	
 	public int getCount() throws SQLException{
@@ -99,6 +93,23 @@ public class UserDao {
 		return count;
 		
 	}
+	
+//	public void jdbcContextWithStatementStrategy(StatementStrategy stmt) throws SQLException{
+//		Connection c = null;
+//		PreparedStatement ps = null;
+//		
+//		try{
+//			c = dataSource.getConnection();
+//			ps = stmt.makePreparedStatement(c);
+//			
+//			ps.executeUpdate();
+//		} catch(SQLException e){
+//			throw e;
+//		} finally {
+//			if (ps != null) {try {ps.close();} catch(SQLException e){} }
+//			if (c != null) {try {c.close();} catch(SQLException e){} }
+//		}
+//	}
 	
 //	public abstract Connection getConnection() throws ClassNotFoundException, SQLException;
 	

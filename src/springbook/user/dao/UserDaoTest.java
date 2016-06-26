@@ -52,7 +52,7 @@ public class UserDaoTest {
 //		ApplicationContext context = new GenericXmlApplicationContext("/applicationContext.xml");
 //		this.dao = this.context.getBean("userDao", UserDao.class);
 		DataSource dataSource = new SingleConnectionDataSource(
-				"jdbc:mariadb://localhost:3306/testdb", "root","kmk75042", true);
+				"jdbc:mariadb://localhost:3306/study", "root","", true);
 		
 		dao.setDataSource(dataSource);
 		
