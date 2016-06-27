@@ -31,5 +31,10 @@ public class CalcSumTest {
 		int multiply = calculator.calcMultiply(this.filePath);
 		assertThat(multiply,is(120));
 	}
+	
+	@Test
+	public void concatenateStrings() throws IOException{
+		assertThat(calculator.concatenate(this.filePath),is("12345"));
+	}
 
 }
