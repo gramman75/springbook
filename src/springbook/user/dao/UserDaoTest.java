@@ -52,7 +52,7 @@ public class UserDaoTest {
 //		ApplicationContext context = new GenericXmlApplicationContext("/applicationContext.xml");
 //		this.dao = this.context.getBean("userDao", UserDao.class);
 		DataSource dataSource = new SingleConnectionDataSource(
-				"jdbc:mariadb://localhost:3306/study", "root","", true);
+				"jdbc:mariadb://localhost:3306/study", "root","kmk75042", true);
 		
 		dao.setDataSource(dataSource);
 		
@@ -117,5 +117,10 @@ public class UserDaoTest {
 		assertThat(dao.getCount(),is(0));
 		
 		dao.get("id");
+	}
+	@Test(expected=DuplicateUserIdException.class)
+	public void addUserFailure(){
+		dao.add(user1);
+		dao.add(user1);
 	}
 }

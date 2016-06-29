@@ -24,7 +24,7 @@ public class UserDao {
 	}
 	
 	
-	public void add(final User user) throws SQLException{
+	public void add(final User user) throws DuplicateUserIdException{
 		
 //		this.jdbcContextWithStatementStrategy(
 //		this.jdbcContext.workWithStatementStrategy(
@@ -40,11 +40,20 @@ public class UserDao {
 //				}
 //			}
 //		);
-		
-		this.jdbcContext.executeSql(
-				"insert into users(userid, name, password) values (?,?,?)",
-				user.getId(), user.getName(), user.getPassword()
-				);
+		try{
+			
+			this.jdbcContext.executeSql(
+					"insert into users(userid, name, password) values (?,?,?)",
+					user.getId(), user.getName(), user.getPassword()
+					);
+		} catch (SQLException e){
+			System.out.println(e.getErrorCode());
+			if (e.getErrorCode() == 1062){
+				throw new DuplicateUserIdException(e);
+			} else {
+				throw new RuntimeException(e);
+			}
+		}
 	}
 	
 	public User get(String id) throws SQLException{
@@ -94,6 +103,7 @@ public class UserDao {
 		
 	}
 	
+
 //	public void jdbcContextWithStatementStrategy(StatementStrategy stmt) throws SQLException{
 //		Connection c = null;
 //		PreparedStatement ps = null;
