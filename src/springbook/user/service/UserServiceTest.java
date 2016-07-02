@@ -8,13 +8,18 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import springbook.user.dao.UserSpringDaoJdbc;
 import springbook.user.domain.Level;
 import springbook.user.domain.User;
+import static springbook.user.service.UserService.MIN_LOGCOUNT_FOR_SILVER;
+import static springbook.user.service.UserService.MIN_RECOMMEND_FOR_GOLD;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.List;
+
+import javax.sql.DataSource;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -29,16 +34,19 @@ public class UserServiceTest {
 	@Autowired
 	UserSpringDaoJdbc userDao;
 	
+	@Autowired
+	DataSource dataSource;
+	
 	List<User> users;
 	
 	@Before
 	public void setup(){
 		users = Arrays.asList(
-				new User("kim1","±è1","p1",Level.BASIC, 49,0),
-				new User("kim2","±è2","p1",Level.BASIC, 59,0),
-				new User("kim3","±è3","p1",Level.SILVER, 60,29),
-				new User("kim4","±è4","p1",Level.SILVER, 60,30),
-				new User("kim5","±è5","p1",Level.GOLD, 10,10)
+				new User("kim1","ï¿½ï¿½1","p1",Level.BASIC, MIN_LOGCOUNT_FOR_SILVER-1,0),
+				new User("kim2","ï¿½ï¿½2","p1",Level.BASIC, MIN_LOGCOUNT_FOR_SILVER,0),
+				new User("kim3","ï¿½ï¿½3","p1",Level.SILVER, 60,MIN_RECOMMEND_FOR_GOLD-1),
+				new User("kim4","ï¿½ï¿½4","p1",Level.SILVER, 60,MIN_RECOMMEND_FOR_GOLD),
+				new User("kim5","ï¿½ï¿½5","p1",Level.GOLD, 10,10)
 				);
 	}
 	
@@ -48,7 +56,7 @@ public class UserServiceTest {
 	}
 	
 	@Test
-	public void upgradeLevels(){
+	public void upgradeLevels() throws Exception{
 		userDao.deleteAll();
 		for(User user: users){userDao.add(user);};
 		
@@ -60,11 +68,63 @@ public class UserServiceTest {
 		checkLevel(users.get(3),Level.GOLD);
 		checkLevel(users.get(4),Level.GOLD);
 		
+		checkLevelUpgrade(users.get(0),false);
+		checkLevelUpgrade(users.get(1),true);
+		checkLevelUpgrade(users.get(2),false);
+		checkLevelUpgrade(users.get(3),true);
+		checkLevelUpgrade(users.get(4),false);
+		
 		
 	}
 	
 	private void checkLevel(User user, Level level){
 		User userUpdate = userDao.get(user.getId());
 		assertThat(userUpdate.getLevel(), is(level));
+	}
+	
+	private void checkLevelUpgrade(User user,boolean upgraded){
+		User userUpgrade = userDao.get(user.getId());
+		if (upgraded){
+			assertThat(userUpgrade.getLevel(),is(user.getLevel().nextLevel()));
+		} else {
+			assertThat(userUpgrade.getLevel(),is(user.getLevel()));
+		}
+	}
+	
+	static class TestUserService extends UserService{
+		private String id;
+		
+		private TestUserService(String id){
+			this.id = id;
+		}
+		
+		protected void upgradeLevel(User user){
+			if (user.getId().equals(this.id)) throw new TestUserServiceException();
+			super.upgradeLevel(user);
+		}
+	}
+	
+	static class TestUserServiceException extends RuntimeException{
+		
+	}
+	
+	@Test
+	public void upgradeAllorNothing() throws Exception{
+		UserService testUserService = new TestUserService(users.get(3).getId());
+		testUserService.setUserDao(this.userDao);
+		testUserService.setDataSource(this.dataSource);
+		
+		userDao.deleteAll();
+		
+		for(User user: users) userDao.add(user);
+		
+		try{
+			testUserService.upgradeLevels();
+			fail("TestUserServiceException expected!");
+		} catch(TestUserServiceException e){
+			
+		} 
+		
+		checkLevelUpgrade(users.get(1), false);
 	}
 }
