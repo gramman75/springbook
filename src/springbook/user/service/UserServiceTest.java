@@ -60,6 +60,24 @@ public class UserServiceTest {
 	}
 	
 	@Test
+	public void add(){
+		userDao.deleteAll();
+		User userWithLevel = new User("kim1","��5","p1",Level.GOLD, 10,10,"kim5@email.com");
+		User userWithoutLevel = new User("kim5","��5","p1",null, 10,10,"kim5@email.com");
+		
+		userService.add(userWithLevel);
+		userService.add(userWithoutLevel);
+		
+		User userWithLevelAdd = userDao.get(userWithLevel.getId());
+		User userWithoutLevelAdd = userDao.get(userWithoutLevel.getId());
+		
+		assertThat(userWithLevelAdd.getLevel(),is(userWithLevel.getLevel()));
+		assertThat(userWithoutLevelAdd.getLevel(),is(Level.BASIC));
+		
+		
+	}
+	
+	@Test
 	public void bean(){
 		assertThat(this.userService,is(notNullValue()));
 	}

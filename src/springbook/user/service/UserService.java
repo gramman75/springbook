@@ -55,26 +55,35 @@ public class UserService {
 		this.mailSender = mailSender;
 	}
 	
+	public void add(User user){
+		if (user.getLevel() == null) user.setLevel(Level.BASIC);
+		
+		userDao.add(user);
+	}
+	
 	public void upgradeLevels() throws Exception{
 		TransactionStatus status = this.transactionManager.getTransaction(new DefaultTransactionDefinition());
 		
 		
 		try{
-			
-			List<User> users = userDao.getAll();
-			
-			for(User user: users){
-				if (canUpgradeLevel(user)){
-					upgradeLevel(user);
-				}
-			}
-
+			upgradeLevelsInternal();
 			this.transactionManager.commit(status);
 		} catch(RuntimeException e){
 			this.transactionManager.rollback(status);
 			throw e;
 		} 
 		
+	}
+	
+	private void upgradeLevelsInternal(){
+		
+		List<User> users = userDao.getAll();
+		
+		for(User user: users){
+			if (canUpgradeLevel(user)){
+				upgradeLevel(user);
+			}
+		}
 	}
 	
 	private boolean canUpgradeLevel(User user){
@@ -94,7 +103,7 @@ public class UserService {
 		sendUpgradeEMail(user);
 	}
 	
-	public void sendUpgradeEMail(User user){
+	private void sendUpgradeEMail(User user){
 //		Properties props = new Properties();
 //		props.put("mail.smtp.host", "mail.ksug.orgi");
 //		
