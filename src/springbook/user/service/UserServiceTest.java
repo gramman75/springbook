@@ -2,8 +2,11 @@ package springbook.user.service;
 
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.MailSender;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import springbook.user.dao.UserSpringDaoJdbc;
 import springbook.user.domain.Level;
@@ -37,17 +40,23 @@ public class UserServiceTest {
 	@Autowired
 	DataSource dataSource;
 	
+	@Autowired
+	PlatformTransactionManager transactionManager;
+	
+	@Autowired
+	MailSender mailSender;
+	
 	List<User> users;
 	
 	@Before
 	public void setup(){
 		users = Arrays.asList(
-				new User("kim1","��1","p1",Level.BASIC, MIN_LOGCOUNT_FOR_SILVER-1,0),
-				new User("kim2","��2","p1",Level.BASIC, MIN_LOGCOUNT_FOR_SILVER,0),
-				new User("kim3","��3","p1",Level.SILVER, 60,MIN_RECOMMEND_FOR_GOLD-1),
-				new User("kim4","��4","p1",Level.SILVER, 60,MIN_RECOMMEND_FOR_GOLD),
-				new User("kim5","��5","p1",Level.GOLD, 10,10)
-				);
+			new User("kim1","��1","p1",Level.BASIC, MIN_LOGCOUNT_FOR_SILVER-1,0,"kim1@email.com"),
+			new User("kim2","��2","p1",Level.BASIC, MIN_LOGCOUNT_FOR_SILVER,0, "kim2@email.com"),
+			new User("kim3","��3","p1",Level.SILVER, 60,MIN_RECOMMEND_FOR_GOLD-1,"kim3@email.com"),
+			new User("kim4","��4","p1",Level.SILVER, 60,MIN_RECOMMEND_FOR_GOLD,"kim4@email.com"),
+			new User("kim5","��5","p1",Level.GOLD, 10,10,"kim5@email.com")
+		);
 	}
 	
 	@Test
@@ -56,9 +65,12 @@ public class UserServiceTest {
 	}
 	
 	@Test
+	@DirtiesContext
 	public void upgradeLevels() throws Exception{
 		userDao.deleteAll();
 		for(User user: users){userDao.add(user);};
+		MockMailSender mailSender = new MockMailSender();
+		userService.setMailSender(mailSender);
 		
 		userService.upgradeLevels();
 		
@@ -74,6 +86,11 @@ public class UserServiceTest {
 		checkLevelUpgrade(users.get(3),true);
 		checkLevelUpgrade(users.get(4),false);
 		
+		List<String> request = mailSender.getRequest();
+		assertThat(request.size(),is(2));
+		
+		assertThat(request.get(0),is(users.get(1).getEmail()));
+		assertThat(request.get(1),is(users.get(3).getEmail()));
 		
 	}
 	
@@ -112,7 +129,8 @@ public class UserServiceTest {
 	public void upgradeAllorNothing() throws Exception{
 		UserService testUserService = new TestUserService(users.get(3).getId());
 		testUserService.setUserDao(this.userDao);
-		testUserService.setDataSource(this.dataSource);
+		testUserService.setTransactionManager(this.transactionManager);
+		testUserService.setMailSender(this.mailSender);
 		
 		userDao.deleteAll();
 		
