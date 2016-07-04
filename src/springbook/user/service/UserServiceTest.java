@@ -8,11 +8,12 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import springbook.user.dao.UserSpringDao;
 import springbook.user.dao.UserSpringDaoJdbc;
 import springbook.user.domain.Level;
 import springbook.user.domain.User;
-import static springbook.user.service.UserService.MIN_LOGCOUNT_FOR_SILVER;
-import static springbook.user.service.UserService.MIN_RECOMMEND_FOR_GOLD;
+import static springbook.user.service.UserServiceImpl.MIN_LOGCOUNT_FOR_SILVER;
+import static springbook.user.service.UserServiceImpl.MIN_RECOMMEND_FOR_GOLD;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -26,6 +27,7 @@ import javax.sql.DataSource;
 
 import org.junit.Before;
 import org.junit.Test;
+import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations="/test-applicationContext.xml")
@@ -33,6 +35,9 @@ public class UserServiceTest {
 
 	@Autowired
 	UserService userService;
+	
+	@Autowired
+	UserServiceImpl userServiceImpl;
 	
 	@Autowired
 	UserSpringDaoJdbc userDao;
@@ -85,24 +90,24 @@ public class UserServiceTest {
 	@Test
 	@DirtiesContext
 	public void upgradeLevels() throws Exception{
-		userDao.deleteAll();
-		for(User user: users){userDao.add(user);};
+		UserServiceImpl userServiceImpl = new UserServiceImpl();
+		UserSpringDao mockUserSpringDao = mock(UserSpringDao.class); 
+		when(mockUserSpringDao.getAll()).thenReturn(this.users);
+
 		MockMailSender mailSender = new MockMailSender();
-		userService.setMailSender(mailSender);
+
+		userServiceImpl.setMailSender(mailSender);
+		userServiceImpl.setUserDao(mockUserSpringDao);
 		
-		userService.upgradeLevels();
+		userServiceImpl.upgradeLevels();
 		
-		checkLevel(users.get(0),Level.BASIC);
-		checkLevel(users.get(1),Level.SILVER);
-		checkLevel(users.get(2),Level.SILVER);
-		checkLevel(users.get(3),Level.GOLD);
-		checkLevel(users.get(4),Level.GOLD);
+		verify(mockUserSpringDao,times(2)).update(any(User.class));
+		verify(mockUserSpringDao).update(users.get(1));
+		assertThat(users.get(1).getLevel(),is(Level.SILVER));
 		
-		checkLevelUpgrade(users.get(0),false);
-		checkLevelUpgrade(users.get(1),true);
-		checkLevelUpgrade(users.get(2),false);
-		checkLevelUpgrade(users.get(3),true);
-		checkLevelUpgrade(users.get(4),false);
+		
+		
+		
 		
 		List<String> request = mailSender.getRequest();
 		assertThat(request.size(),is(2));
@@ -126,7 +131,7 @@ public class UserServiceTest {
 		}
 	}
 	
-	static class TestUserService extends UserService{
+	static class TestUserService extends UserServiceImpl{
 		private String id;
 		
 		private TestUserService(String id){
@@ -145,17 +150,20 @@ public class UserServiceTest {
 	
 	@Test
 	public void upgradeAllorNothing() throws Exception{
-		UserService testUserService = new TestUserService(users.get(3).getId());
+		TestUserService testUserService = new TestUserService(users.get(3).getId());
 		testUserService.setUserDao(this.userDao);
-		testUserService.setTransactionManager(this.transactionManager);
 		testUserService.setMailSender(this.mailSender);
-		
+	
+		UserServiceTx txUserService = new UserServiceTx();
+		txUserService.setTransactionManager(transactionManager);
+		txUserService.setUserService(testUserService);
+
 		userDao.deleteAll();
 		
 		for(User user: users) userDao.add(user);
 		
 		try{
-			testUserService.upgradeLevels();
+			txUserService.upgradeLevels();
 			fail("TestUserServiceException expected!");
 		} catch(TestUserServiceException e){
 			

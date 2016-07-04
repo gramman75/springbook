@@ -21,12 +21,12 @@ public class UserServiceImpl implements UserService {
 	public static final int MIN_RECOMMEND_FOR_GOLD = 30;
 
 	UserSpringDao userDao;
-	private DataSource dataSource;
+//	private DataSource dataSource;
 	private MailSender mailSender;
 	
-	public void setDataSource(DataSource dataSource){
-		this.dataSource = dataSource;
-	}
+//	public void setDataSource(DataSource dataSource){
+//		this.dataSource = dataSource;
+//	}
 		
 	public void setUserDao(UserSpringDao userDao){
 		this.userDao = userDao;
