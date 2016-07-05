@@ -6,10 +6,10 @@
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.USER_LIBRARY/spring.3.0.7"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/mariadb"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/spring"/>
-	<classpathentry kind="lib" path="D:/GitHub/java/springbook/lib/commons-logging-1.2/commons-logging-1.2.jar"/>
-	<classpathentry kind="lib" path="D:/GitHub/java/springbook/lib/com.springsource.org.junit-4.7.0.jar"/>
-	<classpathentry kind="lib" path="D:/GitHub/java/springbook/lib/junit-4.12.jar"/>
-	<classpathentry kind="lib" path="D:/GitHub/java/springbook/lib/spring.3.0.7/spring-test-3.0.7.RELEASE.jar"/>
-	<classpathentry kind="lib" path="D:/GitHub/java/springbook/lib/mockito-all-1.9.1-20110911.jar"/>
+    <classpathentry kind="lib" path="/Volumes/Data/GitHub/java/springbook/lib/commons-logging-1.2/commons-logging-1.2.jar"/>
+	<classpathentry kind="lib" path="/Volumes/Data/GitHub/java/springbook/lib/com.springsource.org.junit-4.7.0.jar"/>
+	<classpathentry kind="lib" path="/Volumes/Data/GitHub/java/springbook/lib/junit-4.12.jar"/>
+	<classpathentry kind="lib" path="/Volumes/Data/GitHub/java/springbook/lib/spring.3.0.7/spring-test-3.0.7.RELEASE.jar"/>
+	<classpathentry kind="lib" path="/Volumes/Data/GitHub/java/springbook/lib/mockito-all-1.9.1-20110911.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

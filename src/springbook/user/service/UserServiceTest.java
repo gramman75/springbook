@@ -20,6 +20,8 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
+import java.lang.reflect.Proxy;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -170,5 +172,32 @@ public class UserServiceTest {
 		} 
 		
 		checkLevelUpgrade(users.get(1), false);
+	}
+	
+	@Test
+	public void upgradeAllorNothingProxy() throws UndeclaredThrowableException{
+		TransactionHandler txHandler = new TransactionHandler();
+		txHandler.setTarget(new TestUserService(users.get(3).getId()));
+		txHandler.setTransactionManager(transactionManager);
+		txHandler.setPattern("upgradeLevels");
+		
+		UserService userService =  (UserService)Proxy.newProxyInstance(
+				getClass().getClassLoader(),
+				new Class[] {UserService.class},
+				txHandler
+				);
+		userDao.deleteAll();
+		
+		for(User user: users) userDao.add(user);
+		
+		try{
+			userService.upgradeLevels();
+			fail("TestUserServiceException expected!");
+		} catch(TestUserServiceException e){
+			
+		} 
+		
+		checkLevelUpgrade(users.get(1), false);
+		
 	}
 }

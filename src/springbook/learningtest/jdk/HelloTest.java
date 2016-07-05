@@ -23,7 +23,11 @@ public class HelloTest {
 	
 	@Test
 	public void dynamicProxy(){
-		Hello proxiedHello = (Hello)Proxy.newProxyInstance(getClass().getClassLoader(), new Class[] {Hello.class}, new UppercaseHandler(new HelloTarget()));
+		Hello proxiedHello = (Hello)Proxy.newProxyInstance(
+				getClass().getClassLoader(), 
+				new Class[] {Hello.class}, 
+				new UppercaseHandler(new HelloTarget())
+		);
 		
 		String name = "Kim";
 		
