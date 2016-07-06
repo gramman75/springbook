@@ -64,6 +64,7 @@ public class HelloTest {
 		pfBean.setTarget(new HelloTarget());
 		
 		NameMatchMethodPointcut pointcut = new NameMatchMethodPointcut();
+
 		pointcut.setMappedName("sayH*");
 		
 		pfBean.addAdvisor(new DefaultPointcutAdvisor(pointcut, new UppercaseAdvice()));
