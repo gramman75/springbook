@@ -2,6 +2,7 @@ package springbook.user.service;
 
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.mail.MailSender;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
@@ -52,6 +53,9 @@ public class UserServiceTest {
 	
 	@Autowired
 	MailSender mailSender;
+	
+	@Autowired
+	ApplicationContext context;
 	
 	List<User> users;
 	
@@ -176,8 +180,10 @@ public class UserServiceTest {
 	
 	@Test
 	public void upgradeAllorNothingProxy() throws UndeclaredThrowableException{
+		TestUserService testUserService = new TestUserService(users.get(3).getId());
+		
 		TransactionHandler txHandler = new TransactionHandler();
-		txHandler.setTarget(new TestUserService(users.get(3).getId()));
+		txHandler.setTarget(testUserService);
 		txHandler.setTransactionManager(transactionManager);
 		txHandler.setPattern("upgradeLevels");
 		
@@ -187,11 +193,41 @@ public class UserServiceTest {
 				txHandler
 				);
 		userDao.deleteAll();
+		testUserService.setUserDao(this.userDao);
+		testUserService.setMailSender(this.mailSender);
 		
 		for(User user: users) userDao.add(user);
 		
 		try{
 			userService.upgradeLevels();
+			fail("TestUserServiceException expected!");
+		} catch(TestUserServiceException e){
+			
+		} 
+		
+		checkLevelUpgrade(users.get(1), false);
+		
+	}
+	
+	@Test
+	@DirtiesContext
+	public void upgradeAllorNothingFactoryBean() throws Exception{
+		TestUserService testUserService = new TestUserService(users.get(3).getId());
+		testUserService.setMailSender(mailSender);
+		testUserService.setUserDao(userDao);
+		
+		TxProxyFactoryBean txProxyFactoryBean = context.getBean("&userService",TxProxyFactoryBean.class);
+		txProxyFactoryBean.setTarget(testUserService);
+		
+		UserService txUserService = (UserService) txProxyFactoryBean.getObject();
+		txUserService.upgradeLevels();
+		
+		userDao.deleteAll();
+		
+		for(User user: users) userDao.add(user);
+		
+		try{
+			txUserService.upgradeLevels();
 			fail("TestUserServiceException expected!");
 		} catch(TestUserServiceException e){
 			

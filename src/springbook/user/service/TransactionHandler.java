@@ -34,7 +34,7 @@ public class TransactionHandler implements InvocationHandler {
 		}
 	}
 
-	private Object invokeTransaction(Method method, Object[] args) throws Exception{
+	private Object invokeTransaction(Method method, Object[] args) throws Throwable{
 		TransactionStatus status = this.transactionManager.getTransaction(new DefaultTransactionDefinition());
 		try{
 			Object ret = method.invoke(target, args);
@@ -42,7 +42,7 @@ public class TransactionHandler implements InvocationHandler {
 			return ret;
 		} catch(InvocationTargetException  e){
 			this.transactionManager.rollback(status);
-			throw e;
+			throw e.getTargetException();
 		}
 
 		
