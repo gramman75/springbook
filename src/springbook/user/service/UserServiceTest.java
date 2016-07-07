@@ -40,8 +40,12 @@ public class UserServiceTest {
 	@Autowired
 	UserService userService;
 	
+//	@Autowired
+//	UserServiceImpl userServiceImpl;
+	
 	@Autowired
-	UserServiceImpl userServiceImpl;
+	UserService testUserService;
+	
 	
 	@Autowired
 	UserSpringDaoJdbc userDao;
@@ -138,12 +142,9 @@ public class UserServiceTest {
 		}
 	}
 	
-	static class TestUserService extends UserServiceImpl{
-		private String id;
+	static class TestUserServiceImpl extends UserServiceImpl{
+		private String id ="kim4";
 		
-		private TestUserService(String id){
-			this.id = id;
-		}
 		
 		protected void upgradeLevel(User user){
 			if (user.getId().equals(this.id)) throw new TestUserServiceException();
@@ -154,7 +155,8 @@ public class UserServiceTest {
 	static class TestUserServiceException extends RuntimeException{
 		
 	}
-	
+
+	/*
 	@Test
 	public void upgradeAllorNothing() throws Exception{
 		TestUserService testUserService = new TestUserService(users.get(3).getId());
@@ -209,26 +211,27 @@ public class UserServiceTest {
 		checkLevelUpgrade(users.get(1), false);
 		
 	}
-	
+	*/
 	@Test
 	@DirtiesContext
 	public void upgradeAllorNothingFactoryBean() throws Exception{
-		TestUserService testUserService = new TestUserService(users.get(3).getId());
-		testUserService.setMailSender(mailSender);
-		testUserService.setUserDao(userDao);
-		
-		ProxyFactoryBean txProxyFactoryBean = context.getBean("&userService",ProxyFactoryBean.class);
-		txProxyFactoryBean.setTarget(testUserService);
-		
-		UserService txUserService = (UserService) txProxyFactoryBean.getObject();
-		txUserService.upgradeLevels();
+//		TestUserService testUserService = new TestUserService(users.get(3).getId());
+//		testUserService.setMailSender(mailSender);
+//		testUserService.setUserDao(userDao);
+//		
+//		ProxyFactoryBean txProxyFactoryBean = context.getBean("&userService",ProxyFactoryBean.class);
+//		txProxyFactoryBean.setTarget(testUserService);
+//		
+//		UserService txUserService = (UserService) txProxyFactoryBean.getObject();
+//		txUserService.upgradeLevels();
 		
 		userDao.deleteAll();
 		
 		for(User user: users) userDao.add(user);
 		
 		try{
-			txUserService.upgradeLevels();
+//			txUserService.upgradeLevels();
+			this.testUserService.upgradeLevels();
 			fail("TestUserServiceException expected!");
 		} catch(TestUserServiceException e){
 			

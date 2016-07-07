@@ -45,6 +45,7 @@
 	</bean>
 	
 	-->
+	<!-- 
 	<bean id="userService" class="org.springframework.aop.framework.ProxyFactoryBean">
 		<property name="target" ref="userServiceImpl"></property>
 		<property name="interceptorNames">
@@ -53,18 +54,22 @@
 			</list>
 		</property>
 	</bean>
+	-->
 	
-	<bean id="userServiceImpl" class="springbook.user.service.UserServiceImpl">
+	<bean id="userService" class="springbook.user.service.UserServiceImpl">
 		<property name="userDao" ref="userDao"></property>
 		<property name="mailSender" ref="mailSender"></property>
 	</bean>	
+	
+	<bean id="testUserService" class="springbook.user.service.UserServiceTest$TestUserServiceImpl" parent="userService"></bean>
 	
 
 	<bean id="transactionAdvice" class="springbook.user.service.TransactionAdvice">
 		<property name="transactionManager" ref="transactionManager"></property>
 	</bean>
 	
-	<bean id="transactionPointcut" class="org.springframework.aop.support.NameMatchMethodPointcut">
+	<bean id="transactionPointcut" class="springbook.service.NameMatchClassMethodPointcut">
+		<property name="mappedClassName" value="*NotImpl"></property>
 		<property name="mappedName" value="upgrade*"></property>
 	</bean>
 	
@@ -73,6 +78,8 @@
 		<property name="pointcut" ref="transactionPointcut"></property>
 	</bean>
 	
+	<bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"></bean>
 	<!--  <bean id="connectionMaker" class="springbook.user.dao.NConnectionMaker"></bean> -->
+
 
 </beans>
