@@ -28,11 +28,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.sql.DataSource;
-
 import org.junit.Before;
 import org.junit.Test;
 import static org.mockito.Mockito.*;
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations="/test-applicationContext.xml")
 public class UserServiceTest {
@@ -239,5 +237,11 @@ public class UserServiceTest {
 		
 		checkLevelUpgrade(users.get(1), false);
 		
+	}
+	
+	@Test
+	public void advisorAutoProxy() throws Exception{
+		System.out.println(UserServiceImpl.class.getMethod("setUserDao", UserSpringDao.class));
+		assertThat(testUserService,is(java.lang.reflect.Proxy.class));
 	}
 }

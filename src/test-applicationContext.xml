@@ -68,11 +68,14 @@
 		<property name="transactionManager" ref="transactionManager"></property>
 	</bean>
 	
-	<bean id="transactionPointcut" class="springbook.service.NameMatchClassMethodPointcut">
-		<property name="mappedClassName" value="*NotImpl"></property>
+<!-- 	<bean id="transactionPointcut" class="springbook.service.NameMatchClassMethodPointcut">
+		<property name="mappedClassName" value="*Impl"></property>
 		<property name="mappedName" value="upgrade*"></property>
-	</bean>
+	</bean> -->
 	
+	<bean id="transactionPointcut" class="org.springframework.aop.aspectj.AspectJExpressionPointcut">
+		<property name="expression" value="execution(* springbook..*Impl.upgrade*(..))"></property>
+	</bean>
 	<bean id="transactionAdvisor"  class="org.springframework.aop.support.DefaultPointcutAdvisor">
 		<property name="advice" ref="transactionAdvice"></property>
 		<property name="pointcut" ref="transactionPointcut"></property>
