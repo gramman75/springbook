@@ -4,11 +4,16 @@ import org.junit.runner.RunWith;
 import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.dao.TransientDataAccessResourceException;
 import org.springframework.mail.MailSender;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import springbook.user.dao.UserSpringDao;
 import springbook.user.dao.UserSpringDaoJdbc;
@@ -34,6 +39,9 @@ import static org.mockito.Mockito.*;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations="/test-applicationContext.xml")
 public class UserServiceTest {
+	
+	@Autowired
+	ApplicationContext context;
 
 	@Autowired
 	UserService userService;
@@ -57,8 +65,6 @@ public class UserServiceTest {
 	@Autowired
 	MailSender mailSender;
 	
-	@Autowired
-	ApplicationContext context;
 	
 	List<User> users;
 	
@@ -140,13 +146,21 @@ public class UserServiceTest {
 		}
 	}
 	
-	static class TestUserServiceImpl extends UserServiceImpl{
+	static class TestUserService extends UserServiceImpl{
 		private String id ="kim4";
 		
 		
 		protected void upgradeLevel(User user){
 			if (user.getId().equals(this.id)) throw new TestUserServiceException();
 			super.upgradeLevel(user);
+		}
+		
+		public List<User> getAll(){
+			for(User user: super.getAll()){
+				super.update(user);
+			}
+			
+			return null;
 		}
 	}
 	
@@ -243,5 +257,28 @@ public class UserServiceTest {
 	public void advisorAutoProxy() throws Exception{
 		System.out.println(UserServiceImpl.class.getMethod("setUserDao", UserSpringDao.class));
 		assertThat(testUserService,is(java.lang.reflect.Proxy.class));
+	}
+	
+	@Test(expected=TransientDataAccessResourceException.class)
+	public void readOnlyTransactionAttriubte(){
+
+		testUserService.getAll();
+	}
+	
+	@Test
+	@Transactional	
+	@Rollback(false)
+	public void transactionSync(){
+//		DefaultTransactionDefinition txDefinition = new DefaultTransactionDefinition();
+//		txDefinition.setReadOnly(true);
+//		TransactionStatus status = transactionManager.getTransaction(txDefinition);
+//		
+		
+		userService.deleteAll();
+
+		userService.add(users.get(1));
+		userService.add(users.get(0));
+//		transactionManager.commit(status);
+		
 	}
 }

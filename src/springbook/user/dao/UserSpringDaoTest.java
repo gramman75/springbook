@@ -58,9 +58,9 @@ public class UserSpringDaoTest {
 //		
 //		dao.setDataSource(dataSource);
 		
-		this.user1 = new User("1", "kim1","kim1",Level.BASIC, 1,0);
-		this.user2 = new User("2", "kim2","kim2",Level.SILVER,55,10);
-		this.user3 = new User("3", "kim3","kim3",Level.GOLD, 100,40);
+		this.user1 = new User("1", "kim1","kim1",Level.BASIC, 1,0, "kim1@email.com");
+		this.user2 = new User("2", "kim2","kim2",Level.SILVER,55,10,"kim2@email.com");
+		this.user3 = new User("3", "kim3","kim3",Level.GOLD, 100,40,"kim3@email.com");
 		
 		
 	}

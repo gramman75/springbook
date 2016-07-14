@@ -11,19 +11,24 @@ import org.springframework.jdbc.core.RowMapper;
 
 import springbook.user.domain.Level;
 import springbook.user.domain.User;
+import springbook.user.sqlservice.SqlService;
 
 public class UserSpringDaoJdbc implements UserSpringDao {
 	private JdbcTemplate jdbcTemplate;
+	private SqlService sqlService;
 	
 	
 	public void setDataSource(DataSource dataSource){
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
 	}
 	
+	public void setSqlService(SqlService sqlService){
+		this.sqlService = sqlService;
+	}
+	
 	public void add(User user){
 		this.jdbcTemplate.update(
-			"insert into users(userid, name, password, level, login, recommend, email) "
-			+ "values (?,?,?,?,?,?,?)",
+			sqlService.getSql("userAdd"),
 			user.getId(), user.getName(), user.getPassword(), 
 			user.getLevel().intValue(), user.getLogin(), 
 			user.getRecommend(), user.getEmail()
@@ -31,22 +36,22 @@ public class UserSpringDaoJdbc implements UserSpringDao {
 	}
 	
 	public void deleteAll(){
-		this.jdbcTemplate.update("delete from users");
+		this.jdbcTemplate.update(sqlService.getSql("userDeleteAll"));
 	}
 	
 	public Integer getCount(){
-		return this.jdbcTemplate.queryForInt("select count(*) from users");
+		return this.jdbcTemplate.queryForInt(sqlService.getSql("userGetCount"));
 	}
 	
 	public User get(String id){
-		return this.jdbcTemplate.queryForObject("select * from users where userid = ?", 
+		return this.jdbcTemplate.queryForObject(sqlService.getSql("userGet"), 
 			new Object[] {id}, 
 		this.userMapper
 		);
 	}
 	
 	public List<User> getAll(){
-		return this.jdbcTemplate.query("select * from users order by userid",
+		return this.jdbcTemplate.query(sqlService.getSql("userGetAll"),
 				this.userMapper);
 	}	
 	
@@ -67,8 +72,7 @@ public class UserSpringDaoJdbc implements UserSpringDao {
 	
 	public void update(User user) {
 		this.jdbcTemplate.update(
-			"update users set name = ? , password = ?, level = ? , login = ? , recommend = ?, email=? "
-			+ "where userid = ?",
+			sqlService.getSql("userUpdate"),
 			user.getName(), user.getPassword(), user.getLevel().intValue(), 
 			user.getLogin(), user.getRecommend(), user.getEmail(), user.getId()
 		);
