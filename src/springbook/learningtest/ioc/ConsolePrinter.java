@@ -1,5 +1,8 @@
 package springbook.learningtest.ioc;
 
+import org.springframework.stereotype.Component;
+
+@Component("printer")
 public class ConsolePrinter implements Printer {
 
 	private String message;

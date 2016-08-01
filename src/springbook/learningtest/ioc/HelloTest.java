@@ -1,11 +1,13 @@
 package springbook.learningtest.ioc;
 
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.context.support.GenericXmlApplicationContext;
 import org.springframework.context.support.StaticApplicationContext;
 
 import static org.junit.Assert.assertThat;
@@ -13,6 +15,12 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
 public class HelloTest {
+	
+	@Autowired
+	private Hello hello;
+	
+	@Autowired
+	private Printer printer;
 
 	@Test
 	public void applicationContext(){
@@ -64,10 +72,19 @@ public class HelloTest {
 		reader.loadBeanDefinitions("springbook/learningtest/ioc/applicationContext.xml");
 		ac.refresh();
 		
-		Hello hello = (Hello) ac.getBean("hello");
+		Hello hello = ac.getBean("hello", Hello.class);
+		hello.setName("Spring");
 		hello.print();
-		
+
 		assertThat(ac.getBean("printer").toString(),is("Hello Spring"));
 	}
+	
+//	@Test
+//	public void autoWired(){
+//		GenericXmlApplicationContext ac = new GenericXmlApplicationContext("springbook/learningtest/ioc/applicationContext.xml");
+//		
+//		this.hello.setName("Spring");
+//		assertThat(this.printer.toString(),is("Hello Spring"));
+//	}
 	
 }
