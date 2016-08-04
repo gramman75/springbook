@@ -73,10 +73,10 @@ public class HelloTest {
 		ac.refresh();
 		
 		Hello hello = ac.getBean("hello", Hello.class);
-		hello.setName("Spring");
+//		hello.setName("Spring");
 		hello.print();
 
-		assertThat(ac.getBean("printer").toString(),is("Hello Spring"));
+		assertThat(ac.getBean("printer").toString(),is("Hello Windows 7"));
 	}
 	
 //	@Test
