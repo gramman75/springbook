@@ -6,11 +6,18 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Scope;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.context.support.GenericXmlApplicationContext;
 import org.springframework.context.support.StaticApplicationContext;
 
 import static org.junit.Assert.assertThat;
+
+import java.util.HashSet;
+import java.util.Set;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
@@ -86,5 +93,24 @@ public class HelloTest {
 //		this.hello.setName("Spring");
 //		assertThat(this.printer.toString(),is("Hello Spring"));
 //	}
+	@Test
+	public void singletonScope(){
+		ApplicationContext ac = new AnnotationConfigApplicationContext(SingletonBean.class, SingletonClientBean.class);
+		
+		Set<SingletonBean> beans = new HashSet<SingletonBean>();
+		beans.add(ac.getBean(SingletonBean.class));
+		beans.add(ac.getBean(SingletonBean.class));
+		
+		assertThat(beans.size(),is(2));
+	}
+	
+	@Scope("prototype")
+	static class SingletonBean{}
+	
+	static class SingletonClientBean{
+		@Autowired SingletonBean bean1;
+		@Autowired SingletonBean bean2;
+		
+	}
 	
 }
